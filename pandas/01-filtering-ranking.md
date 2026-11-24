@@ -112,6 +112,27 @@ one = df.sort_values(['category','amount','order_id'],
                      ascending=[True,False,True]).groupby('category').head(1)
 ```
 
+## Variation — different meaning of Top N
+
+**English:** Select the two highest-ranked orders per category, breaking ties by ascending order ID.
+
+This means exactly two rows per category if at least two exist, not the top two distinct amount values.
+
+```python
+top2 = (df.sort_values(['category','amount','order_id'],
+                       ascending=[True,False,True])
+          .groupby('category').head(2))
+# Fashion: O02, O03; Tech: O04, O05
+```
+
+If wording is "include ties at the second distinct rank", use dense rank <= 2 instead: Fashion O01 is also retained. If the requirement first excludes cancelled orders, apply filtering before ranking, otherwise cancelled O02 may wrongly affect ranks.
+
+<details><summary>Variation: How would you return only merchants A or B whose amount is not between 100 and 200 inclusive?</summary>
+
+`df.loc[df.merchant_id.isin(['A','B']) & ~df.amount.between(100,200)]`. O02, O03. Parentheses or clear masks prevent precedence mistakes.
+
+</details>
+
 ## Concept check
 
 1. Which operator combines two element-wise Boolean conditions in pandas: and or &?
