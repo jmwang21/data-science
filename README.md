@@ -1,4 +1,4 @@
-# Data Science Study Handbook
+# Data Science Comprehensive Review Handbook
 
 ![Study handbook](assets/overview.svg)
 
@@ -18,7 +18,15 @@
 
 ## 如何使用
 
-從 01–05 建立知識基礎，接著閱讀 08，練習 06、09，考前用 07 速查。答案收合區可點開。09 的 CSV 位於 `data/`，完整程式位於 `solutions/`。
+以閱讀複習為主：01–05、08 是核心教材；06 是完整案例與參考解法；07 是速查；09 是選用的獨立模擬考，不是閱讀進度的必要條件。各章的 Concept Check 用於觀念釐清與自我審視，可直接展開答案。09 的 CSV 位於 `data/`，完整程式位於 `solutions/`。
+
+### 教材優先級
+
+- **P0 核心**：原理、公式、常用語法、重要參數、範例、方法選擇與陷阱。
+- **P1 延伸**：重要變體、特殊情境與實務限制。
+- **P2 認識即可**：冷門 API、底層細節、非必要證明。
+
+Probability & Statistics 從基本定義逐步建立；其餘章節採全面複習深度。不以大量獨立練習為主，優先提供可直接閱讀的 worked examples 和少量有鑑別度的 concept checks。
 
 > [!NOTE]
 > 所有資料與題目均為合成或原創教材，不代表任何正式測驗題庫、官方規格或錄取標準。90 分鐘是練習設定。程式以常用 pandas / NumPy / scikit-learn API 為主；獨立片段未全部執行驗證。
