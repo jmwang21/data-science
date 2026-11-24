@@ -29,6 +29,8 @@ $$\frac{\binom{12}{2}\binom{28}{3}}{\binom{40}{5}}$$
 | Poisson(λ) | 固定區間事件數、理想化常率獨立增量 | λ | λ |
 | Normal(μ,σ²) | 連續鐘形分布 | μ | σ² |
 | Exponential(λ) | Poisson process 等待時間 | 1/λ | 1/λ² |
+| Geometric(p) | Trials until first success | 1/p | (1-p)/p² |
+| Uniform(a,b) | Constant density on interval | (a+b)/2 | (b-a)²/12 |
 
 Hypergeometric 的 p=K/N，N>1。
 
@@ -72,19 +74,9 @@ norm.ppf(.975)  # ≈1.96
 
 > ⚠️ 真實 GMV 常右偏，不可因為需要常態公式就假設原始 GMV 正態。
 
-## Identify the distribution
+## Geometric and Uniform (P1)
 
-| Wording | Distribution |
-|---|---|
-| Fixed number of independent trials, constant probability | Binomial |
-| Sample without replacement from finite population | Hypergeometric |
-| Number of events in a fixed interval at constant Poisson rate | Poisson |
-| Trials until first success | Geometric |
-| Waiting time until next event in Poisson process | Exponential |
-| Continuous normally distributed quantity | Normal |
-| Constant density over [a,b] | Uniform |
-
-Geometric: P(T=k)=(1−p)^(k−1)p, E[T]=1/p. Uniform: mean=(a+b)/2, variance=(b−a)²/12. Exponential: P(T>t)=exp(−lambda*t), mean=1/lambda.
+Geometric: P(T=k)=(1−p)^(k−1)p, with T counting trials including success. Uniform(a,b): interval probability=(d−c)/(b−a) for [c,d] inside support. Compare the wording "number of successes in 10 attempts" (binomial) and "number of attempts until first success" (geometric).
 
 ## Worked variations: same wording, different assumptions
 
@@ -100,7 +92,7 @@ poisson.sf(0,2)
 norm.sf(130,loc=100,scale=20)
 ```
 
-PMF for discrete exact values; PDF for continuous density, not point probability. CDF=P(X≤x); SF=P(X>x); discrete at least k uses sf(k−1).
+**English variations:** exactly k → pmf(k); at most k → cdf(k); at least k → sf(k−1), for discrete variables. For continuous variables, above threshold → sf(threshold).
 
 <details><summary>Variation 1: A committee of 3 is selected from 5 analysts and 4 engineers. How many committees contain exactly two analysts?</summary>
 
