@@ -160,3 +160,25 @@ def load_partitions(paths, required, aliases=None):
 兩者都是一對多事件表，直接按 merchant_id merge 會產生 many-to-many fanout。各自先 groupby 到商家粒度，再 left join 商家主表，才能保留沒有事件的商家且避免重複計算。
 
 </details>
+
+## English assessment language
+
+| English wording | 中文解讀 |
+|---|---|
+| Concatenate the files row-wise. | 將相同邏輯表的分區縱向合併 |
+| Preserve leading zeros in identifiers. | ID 讀為字串 |
+| Normalize inconsistent column names. | 統一欄名與 alias |
+| Remove duplicate records, keeping the most recent update. | 按時間排序後依 business key 去重 |
+| Ensure a one-to-one correspondence between IDs and predictions. | 確認輸出 ID 對應且沒有重複或遺漏 |
+| Compute the column-wise mean. | axis=0，對每欄聚合 |
+| Apply an element-wise transformation. | 逐元素轉換，不是矩陣乘法 |
+
+```python
+import numpy as np
+a=np.array([[1,2],[3,4],[5,6]])
+a.mean(axis=0) # [3.,4.]
+a.mean(axis=1) # [1.5,3.5,5.5]
+a-a.mean(axis=0) # [[-2,-2],[0,0],[2,2]]
+```
+
+Broadcasting compares trailing dimensions; (3,2) minus (2,) works. For row-wise centering use a.mean(axis=1,keepdims=True) so shape is (3,1). 不需深入 stride、底層記憶體配置。
