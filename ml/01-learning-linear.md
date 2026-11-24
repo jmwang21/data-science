@@ -43,13 +43,19 @@ Binary cross-entropy：$-\frac1n\sum_i[y_i\log p_i+(1-y_i)\log(1-p_i)]$。
 
 sklearn LogisticRegression 的 `C` 為 regularization strength 的反向控制：C 小 → stronger regularization。Ridge/Lasso 的 alpha 則大 → stronger。不同模型 penalty 的精確 scaling 定義可能不同。
 
-## Loss and regularization
+## Loss, coefficients and regularization
 
 Linear regression predicts continuous target; logistic regression predicts probability via sigmoid. OLS minimizes squared residuals, logistic regression minimizes negative log likelihood (cross-entropy). Linear models can use nonlinear transformed features.
 
 For ridge, objective is SSE + alpha·sum(w²); Lasso uses absolute coefficient penalty (sklearn conventions may scale data loss differently). L1 can set coefficients to zero; L2 shrinks. ElasticNet combines both. LogisticRegression C is inverse regularization strength.
 
 Example: logistic score z=0 means p=.5; z=ln(3) means odds=3 and p=.75. Adding coefficient ln(2) doubles odds to 6, so p=6/7=.857, not 1.5.
+
+### Worked regression variation
+
+A model predicts price (in thousands): price=50+3×area−2×age. For area=80 and age=10, prediction=270. If area grows by 10 with age fixed, predicted price increases by 30; this is conditional association, not proof of causation. Residual=y−prediction. If actual=300, residual=30, squared error=900.
+
+Ridge shrinks coefficients; Lasso may choose zero coefficients. When two features are nearly identical, Lasso may arbitrarily choose one, Ridge tends to distribute weight. Neither coefficient magnitude alone nor feature importance establishes causal effects.
 
 Gradient descent updates weights opposite the gradient. Learning rate too high can overshoot; too small can converge slowly. Batch vs mini-batch vs stochastic use different sample subsets.
 
