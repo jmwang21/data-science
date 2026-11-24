@@ -22,15 +22,22 @@ SVM 對尺度敏感，大資料的 kernel SVM 成本可能高。Linear SVM 適�
 
 KNN predicts by vote (classification) or average (regression) among nearest training observations. k small means flexible decision boundary and sensitivity to noise; k large smooths and can underfit. Standardize when feature units differ. High-dimensional distances can become less informative.
 
-Example: three nearest neighbors labels [1,1,0], uniform vote gives class 1; with k=1 nearest label=0 would give class 0 (if nearest is the 0). Distance weights can change the vote.
+Example: nearest neighbors sorted by distance are (0.1,label 0), (1,label 1), (2,label 1). Uniform k=3 predicts class 1 (two votes); k=1 predicts class 0. Inverse-distance weights are [10,1,.5], so class 0 wins even at k=3.
 
-## SVM — margin and kernel
+```python
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+knn=make_pipeline(StandardScaler(),KNeighborsClassifier(n_neighbors=5,weights='distance'))
+```
 
-Soft margin allows violations with penalty C. Large C discourages violations; high gamma RBF makes points influence a more local region. Together they can increase complexity. SVC decision_function returns scores, not necessarily calibrated probabilities.
+Training/inference cost also differs: KNN stores training data and searches neighbors at inference; SVM learns a decision boundary during training.
 
 ## Naive Bayes
 
 Bayes classifier models P(class|features) proportional to P(class)×P(features|class). Naive assumption: features conditionally independent given class. GaussianNB for continuous Gaussian class-conditional features, MultinomialNB for nonnegative counts. Not global independence; correlated features can double-count evidence.
+
+Worked binary example: prior P(spam)=.2; P(word|spam)=.8; P(word|ham)=.1. Posterior=.16/(.16+.08)=2/3. If two words are conditionally independent, multiply likelihoods within each class before normalizing. If two words always appear together, treating them as independent overstates evidence.
 
 <details><summary>Variation: An unscaled feature is measured in dollars (0–1,000,000) and another in years (0–20). What happens to KNN?</summary>
 
