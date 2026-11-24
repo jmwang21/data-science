@@ -95,3 +95,68 @@ A merchant with 3 orders and 2 tickets creates 6 rows if raw event tables are jo
 ## 4. Seven-file practice
 
 See [mock assessment Q9–Q11](09-mock.md) for a runnable dataset with seven CSV files, four logical tables, inconsistent headers, repeated business IDs, bad amounts, multiple event grains, missing values and unseen categories. All data is synthetic. Complete data preparation before running the classifier.
+
+## 5. Python / NumPy 核心複習（P0）
+
+| Concept | 常用語法 | 重點 |
+|---|---|---|
+| List / tuple | [1,2], (1,2) | tuple 不可變；list 可變 |
+| Dict / set | {k:v for k,v in pairs}, set(values) | mapping、去重、membership |
+| Sorting | sorted(rows,key=lambda r:r[1],reverse=True) | key 是排序依據 |
+| Iteration | zip(ids,values), enumerate(values) | zip 預設截到最短 |
+| Function | def f(x,threshold=0): return x>threshold | 避免可變 default arguments |
+| Array creation | np.arange(6).reshape(3,2) | reshape 元素總數不變 |
+| Indexing | a[:,0], a[[0,2]], a[a>0] | slice 通常 view；advanced indexing 是 copy |
+| Aggregation | a.sum(axis=0), a.mean(axis=1) | axis=0 沿列消去；axis=1 沿欄消去 |
+| Ranking | np.argsort(a), np.argmax(a) | index 而非 value |
+| Matrix | X @ w, X * w | matrix product vs elementwise |
+| Random | np.random.default_rng(42) | 可重現的 generator |
+
+```python
+import numpy as np
+a=np.arange(6).reshape(3,2)
+# [[0,1],[2,3],[4,5]]
+a.sum(axis=0)  # [6,9]
+a.sum(axis=1)  # [1,5,9]
+a - a.mean(axis=0)  # column centering
+a - a.mean(axis=1,keepdims=True)  # row centering
+a @ np.array([2,3])  # [3,13,23]
+np.unique(a,return_counts=True)
+np.quantile(a,[.25,.5,.75])
+```
+
+### 多檔案整合：可重用的 ingestion pattern
+
+```python
+from pathlib import Path
+import pandas as pd
+
+def load_partitions(paths, required, aliases=None):
+    frames=[]
+    for path in sorted(paths):
+        df=pd.read_csv(path,dtype='string')
+        df.columns=df.columns.str.strip().str.lower()
+        df=df.rename(columns=aliases or {})
+        if not df.columns.is_unique:
+            raise ValueError(f'Duplicate columns: {path}')
+        missing=set(required)-set(df.columns)
+        if missing:
+            raise ValueError(f'{path}: missing {missing}')
+        frames.append(df.assign(source_file=Path(path).name))
+    if not frames:
+        raise ValueError('No input files')
+    return pd.concat(frames,ignore_index=True)
+
+# Example: paths = Path('data').glob('orders_*.csv')
+# orders = load_partitions(paths,['order_id','merchant_id','amount','order_date'])
+# orders['amount'] = pd.to_numeric(orders.amount,errors='coerce')
+# orders['order_date'] = pd.to_datetime(orders.order_date,errors='coerce')
+```
+
+不同邏輯表不要 concat；先各自整理後按 key merge。資料檢核至少包括 schema、ID 唯一性、null key、unmatched keys、row count、金額對帳、時間邊界。若 labels 為未來期間結果，features 必須只使用 cutoff 前的 events。資料量很大才考慮 chunksize；跨 chunk 的 distinct count 不能直接相加（P1）。
+
+<details><summary>Concept check：為何同一商家的 orders 與 support tickets 不宜直接 merge？</summary>
+
+兩者都是一對多事件表，直接按 merchant_id merge 會產生 many-to-many fanout。各自先 groupby 到商家粒度，再 left join 商家主表，才能保留沒有事件的商家且避免重複計算。
+
+</details>
