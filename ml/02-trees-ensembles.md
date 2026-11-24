@@ -18,7 +18,7 @@ Classification 使用 Gini $1-\sum p_k^2$ 或 entropy $-\sum p_k\log_2 p_k$ 衡�
 
 優點：非線性、交互作用、不需 scaling。缺點：單棵樹 high variance、外插差。Impurity importance 偏好高基數特徵，且相關特徵會分攤重要性。
 
-## Ensemble Learning — comparison & multi-select 
+## Ensemble Learning — comparison 
 
 | Method | Training | Main intuition | Pitfall |
 |---|---|---|---|
@@ -39,6 +39,10 @@ A, C. B is false because boosting is sequential. D is too absolute: distribution
 
 </details>
 
+## Decision Tree — compare candidate splits
+
+At a parent with 6 positives and 4 negatives, Gini=1−.6²−.4²=.48. Split A creates children (3P,0N) and (3P,4N), weighted impurity=(3/10)×0+(7/10)×[1−(3/7)²−(4/7)²]≈.3429; gain≈.1371. Split B creates (4P,1N) and (2P,3N), weighted impurity=.5×.32+.5×.48=.40; gain=.08. Greedy tree prefers A under Gini. Not enough to compare each child impurity separately; weight by sample size.
+
 ## Random Forest — why randomness helps
 
 Bootstrap n draws with replacement leaves about 36.8% of training observations out of each tree for large n. At each split, randomly select candidate features. Averaging decorrelated trees reduces variance: under equal variance v and correlation rho, average variance is v[rho+(1−rho)/M]. More trees cannot remove shared errors. OOB score estimates performance using trees that did not train on each observation, but repeated tuning on OOB can overfit the estimate.
@@ -56,6 +60,8 @@ max_features='sqrt' ≈ square root of count, 'log2' ≈ log2, float proportion,
 ## Gradient Boosting — sequential loss reduction
 
 Squared-error example: y=[10,20,30]; initial mean=20; residual=[−10,0,10]. New tree predicts [−8,0,8]. With learning_rate=.5, ensemble predictions become [16,20,24], residual [−6,0,6]. Other differentiable losses fit negative gradient rather than raw residuals.
+
+For classification boosting optimizes differentiable losses such as log loss. AdaBoost instead emphasizes incorrectly classified observations through sample weights; focus on sequential correction vs bagging, not implementation internals.
 
 Learning_rate and n_estimators interact. Small learning rate often requires more trees. Depth/leaf size controls base learners; subsample can regularize; early stopping uses validation. XGBoost, LightGBM, CatBoost are gradient boosting variants with implementation differences; focus on principles, not obscure configuration.
 
