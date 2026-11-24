@@ -60,6 +60,30 @@ monthly = df.groupby('month',as_index=False).amount.sum()
 
 輸出 Jan=100、Feb=200、Mar=300；NaT group 預設不包含。resample 可用於 DatetimeIndex 的固定頻率彙總，但一般月彙總用 to_period + groupby 已足夠。多時區 timestamp 先統一 UTC，再轉 business timezone 後取日期（重要延伸）。
 
+## Variation — time cutoff and calendar duration
+
+**English:** Compute customer tenure as of the prediction cutoff rather than today's date.
+
+```python
+join_date = pd.Series(pd.to_datetime(['2025-01-01','2025-02-15']))
+tenure = (pd.Timestamp('2025-03-01')-join_date).dt.days
+# [59,14]
+```
+
+For timestamps across time zones, parse with utc=True and convert to the business zone before extracting day/month. A UTC timestamp on Feb 28 at 18:00 is already Mar 1 at 02:00 in UTC+8; the monthly bucket differs.
+
+<details><summary>Variation: A timestamp is Feb 28 at 23:59. Does <= '2025-02-28' include it?</summary>
+
+Usually no: the right-hand side parses to midnight at the start of Feb 28. Use a half-open interval ending at March 1.
+
+</details>
+
+<details><summary>Variation: Why might .dt.days return 0 for timestamps that fall on different calendar dates?</summary>
+
+It counts whole elapsed days, not calendar boundaries. Normalize both dates first if the requirement is calendar-day difference.
+
+</details>
+
 ## Concept check
 
 **Why is date < '2025-03-01' preferable to date <= '2025-02-28' for filtering February timestamps?**
