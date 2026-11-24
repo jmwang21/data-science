@@ -107,6 +107,32 @@ concat axis=0 縱向疊資料，依欄名對齊，ignore_index=True 重建 index
 
 多檔讀取、schema normalization 另見 [Python/NumPy & Multi-file Data Integration](../08-numpy-data.md)。
 
+## Variation — filtering before and after joins
+
+**English:** Retain all merchants but count only orders with amount above 200.
+
+```python
+eligible = orders.loc[orders.amount>200]
+counts = eligible.groupby('merchant_id').size().rename('n').reset_index()
+res = merchants.merge(counts,on='merchant_id',how='left',validate='one_to_one')
+res['n'] = res.n.fillna(0).astype(int)
+# A:1, B:0, C:0
+```
+
+If you instead left join and then filter amount>200, B and C disappear. If the output should include all merchants, preserve the target population.
+
+<details><summary>Variation: An orders table has 100 rows; after left joining a merchant dimension it has 105. What should you inspect first?</summary>
+
+Right-side duplicate keys and join cardinality. For one merchant record per key, validate='many_to_one' should fail when right keys duplicate. Audit null keys and key types too.
+
+</details>
+
+<details><summary>Variation: January and February have the same columns but different row indexes. Should they be merged on the index?</summary>
+
+No. Same logical table partitions normally concatenate row-wise using ignore_index=True; join by an actual business key only when the two tables represent related entities.
+
+</details>
+
 ## Concept check
 
 **A merchant has three orders and two support tickets. How many rows can a direct inner merge on merchant_id produce?**
