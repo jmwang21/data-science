@@ -11,10 +11,10 @@
 | 🟣 [03 Model Development & Evaluation](03-models.md) | 模型訓練、評估、調參、Log Loss |
 | 🟠 [04 ML Fundamentals](04-ml.md) | 演算法、Ensemble、驗證及泛化 |
 | 🔴 [05 Probability & Statistics](05-statistics.md) | 機率、期望值、推論與實驗 |
-| 🔵 [06 Integrated Cases](06-cases.md) | 完整商業案例及答案 |
+| 🔵 [06 Integrated Cases](06-cases.md) | pandas 商業分析、Churn Classification、House Price Regression 完整解法 |
 | ⚪ [07 Cheat Sheet & Common Pitfalls](07-review.md) | 速查、錯誤觀念修正 |
-| 🟢 [08 NumPy & Multi-file Data Integration](08-numpy-data.md) | NumPy、七份 CSV、四張邏輯表 |
-| 🟣 [09 Timed Mock Assessment](09-mock.md) | 90 分鐘、11 題原創模擬考 |
+| 🟢 [08 Python / NumPy & Multi-file Data Integration](08-numpy-data.md) | Python、NumPy、七份 CSV、四張邏輯表、schema validation |
+| 🟣 [09 Timed Mock Assessment（選用）](09-mock.md) | 90 分鐘、11 題原創模擬考 |
 
 ## 如何使用
 
@@ -30,3 +30,18 @@ Probability & Statistics 從基本定義逐步建立；其餘章節採全面複�
 
 > [!NOTE]
 > 所有資料與題目均為合成或原創教材，不代表任何正式測驗題庫、官方規格或錄取標準。90 分鐘是練習設定。程式以常用 pandas / NumPy / scikit-learn API 為主；獨立片段未全部執行驗證。
+
+## 核心知識索引
+
+| Knowledge area | 建議閱讀 |
+|---|---|
+| Python、NumPy、資料讀取與多檔案整合 | [08](08-numpy-data.md)、[01](01-pandas.md) |
+| Filtering、groupby、join、reshape、strings、datetime、windows | [01](01-pandas.md) |
+| Missing values、outliers、scaling、encoding、feature engineering、selection、imbalance | [02](02-preprocessing.md) |
+| Regression、classification、clustering、metrics、CV、tuning、calibration、submission | [03](03-models.md) |
+| Algorithm mechanisms、loss、regularization、ensembles、optimization、PCA、generalization、drift | [04](04-ml.md) |
+| Probability、Bayes、counting、distributions、expectation、sampling、CI、statistical tests、A/B testing | [05](05-statistics.md) |
+| End-to-end worked examples | [06](06-cases.md) |
+| Quick reference | [07](07-review.md) |
+
+建議先讀 08 的 Python/NumPy 基礎，再讀 01–05；已熟悉基礎者可直接按主題跳讀。06 提供完整案例供閱讀，不必先作答。09 保留作選用模擬考。此索引是通用資料科學複習範圍，不是正式考試規格。
