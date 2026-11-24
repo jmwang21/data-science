@@ -252,3 +252,72 @@ for p in [a,b]:
 No. A strictly increasing transformation preserves ranking and therefore AUC, but changes the probabilities and generally changes log loss. Log loss alone does not isolate calibration from discrimination.
 
 </details>
+
+## 15. Comprehensive review — estimator selection and regression workflow (P0)
+
+| Estimator | Important controls | When to consider |
+|---|---|---|
+| LinearRegression | fit_intercept | interpretable linear baseline |
+| Ridge | alpha (larger = more L2 shrinkage) | correlated predictors |
+| Lasso | alpha, max_iter | sparse coefficients |
+| ElasticNet | alpha, l1_ratio | correlated features + sparsity |
+| LogisticRegression | C (smaller = stronger regularization), max_iter, class_weight | classification baseline |
+| KNeighborsClassifier / Regressor | n_neighbors, weights, metric | local patterns, scaled features |
+| SVC / SVR | C, kernel, gamma; SVR epsilon | nonlinear boundaries, moderate data |
+| DecisionTree | max_depth, min_samples_leaf, criterion | interpretable nonlinear splits |
+| RandomForest | n_estimators, max_features, max_depth, min_samples_leaf | robust nonlinear tabular baseline |
+| GradientBoosting | n_estimators, learning_rate, max_depth, subsample | sequential improvement |
+| HistGradientBoosting | max_iter, learning_rate, max_leaf_nodes, l2_regularization | larger numeric tabular datasets |
+| GaussianNB | var_smoothing | simple Gaussian class-conditional baseline |
+| DummyRegressor | strategy=median or mean | sanity baseline |
+
+Most estimators implement fit/predict; classifiers may expose predict_proba or decision_function. Trees accept nonlinear interactions without scaling; distance and regularized linear methods benefit from appropriate scaling. No model is universally best. For external boosting libraries (XGBoost, LightGBM, CatBoost), verify availability and version; sklearn alternatives are enough for the core workflow.
+
+### End-to-end regression: train / validation / unlabeled test
+
+Assume train.csv and val.csv contain numeric features and target 'price', test.csv contains the same features but no target; all have a unique 'id'. Adapt the schema to the actual task.
+
+```python
+import pandas as pd
+from sklearn.base import clone
+from sklearn.pipeline import make_pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.dummy import DummyRegressor
+from sklearn.linear_model import Ridge
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.metrics import mean_absolute_error
+
+train, val, test = [pd.read_csv(f'{p}.csv') for p in ['train','val','test']]
+features = train.columns.drop(['id','price'])
+X, y = train[features], train.price
+Xv, yv = val[features], val.price
+Xt = test[features]
+models = {
+    'baseline': DummyRegressor(strategy='median'),
+    'ridge': make_pipeline(SimpleImputer(strategy='median'),StandardScaler(),Ridge(alpha=1)),
+    'rf': make_pipeline(SimpleImputer(strategy='median'),RandomForestRegressor(
+        n_estimators=150,min_samples_leaf=3,random_state=42,n_jobs=-1)),
+    'gb': make_pipeline(SimpleImputer(strategy='median'),GradientBoostingRegressor(
+        loss='absolute_error',n_estimators=150,learning_rate=.05,max_depth=3,random_state=42))
+}
+scores = {}
+for name,m in models.items():
+    m.fit(X,y)
+    scores[name] = mean_absolute_error(yv,m.predict(Xv))
+best = min(scores,key=scores.get)
+# Only after selection is final; val is no longer an independent evaluation.
+final = clone(models[best]).fit(pd.concat([X,Xv]),pd.concat([y,yv]))
+submission = pd.DataFrame({'id':test.id,'price':final.predict(Xt)})
+assert len(submission)==len(test)
+submission.to_csv('submission.csv',index=False)
+```
+
+For mixed types, replace the numerical preprocessing with Chapter 02 ColumnTransformer. The median minimizes expected absolute error; mean minimizes expected squared error. In sklearn CV, use scoring='neg_mean_absolute_error' (larger is better, reverse sign to report MAE). Do not calculate test MAE without labels. If submission schema requires a different column or row order, follow it exactly.
+
+### Tuning, diagnosis and interpretation
+Start with baseline and 2–3 credible models, compare on the same validation split. Grid search enumerates candidates; randomized search samples candidates and is useful for wider spaces. Tune learning_rate jointly with iterations; early stopping uses held-out data, never final test. For residuals e=y-pred, positive means underprediction. Inspect mean signed error, MAE by segment, residual vs prediction and extreme errors; improving global MAE can hurt a minority segment. Learning curves compare train and validation performance as sample size increases; validation curves vary hyperparameters.
+
+Permutation importance measures validation-score degradation after shuffling a feature; correlated features may mask each other. Tree impurity importance can favor high-cardinality features. SHAP (P1) explains model predictions relative to a baseline, not causal effects. For skewed nonnegative targets, log1p/expm1 can help but select by original-scale metric; inverse transformation does not automatically yield unbiased conditional means.
+
+Reference: [scikit-learn supervised learning](https://scikit-learn.org/stable/supervised_learning.html).
