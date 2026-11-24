@@ -84,6 +84,38 @@ assert out.merchant.is_unique
 
 D 必須存在，因為題意要求保留全體商家。若接下來要用此資料預測未來，還需將 label period 與 feature period 分離，避免 leakage。
 
+## Variations — business requirement changes
+
+### Variation A: calculate category-level growth
+
+Do not average merchant growth rates. Aggregate Jan and Feb GMV by category first.
+
+```python
+cat = out.groupby('category',as_index=False).agg(
+    jan=('jan_gmv','sum'), feb=('feb_gmv','sum'))
+cat['growth'] = (cat.feb-cat.jan)/cat.jan.replace(0,np.nan)
+# Fashion: (250-300)/300=-1/6; Tech: NaN
+```
+
+### Variation B: preserve all merchants, but rank only active merchants
+
+```python
+active = out.loc[out.order_count.gt(0)].copy()
+active['active_rank'] = active.groupby('category').total_gmv.rank(
+    method='dense',ascending=False)
+with_rank = out.merge(active[['merchant','active_rank']],on='merchant',
+                      how='left',validate='one_to_one')
+# D remains present, active_rank=NaN
+```
+
+Ranking eligibility and output population are distinct requirements. This is a common change in business questions: "retain all merchants" does not always mean "rank all merchants".
+
+<details><summary>Variation C: A label table includes one row per merchant, but D's target is missing. Should D be automatically labeled zero?</summary>
+
+No. For modeling, missing label and negative label are distinct. Keep D for inference if appropriate; exclude unknown labels from ordinary supervised training/evaluation.
+
+</details>
+
 ## 6. Self-review
 
 <details><summary>Why not fill all missing values with zero after the merge?</summary>
