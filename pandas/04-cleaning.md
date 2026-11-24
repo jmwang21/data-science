@@ -68,6 +68,31 @@ s.str.contains('pro',case=False,regex=False,na=False)
 
 常用 strip、lower、contains、replace 足夠應付大部分清理；regex 只需熟悉簡單擷取及匹配，不必大量背特殊語法。
 
+## Variation — latest record and data validity
+
+```python
+updates = pd.DataFrame({'id':['A','A','B'],
+                        'updated':['2025-02-01','2025-01-01','2025-02-02'],
+                        'value':[20,10,30]})
+updates['updated'] = pd.to_datetime(updates.updated)
+latest = updates.sort_values('updated').drop_duplicates('id',keep='last')
+# A:20, B:30
+```
+
+Without sorting, keep='last' would incorrectly choose A=10. Need a deterministic tie-break if timestamps tie.
+
+<details><summary>Variation: pd.to_numeric(errors='coerce') converts 'bad' to NaN. Does it also eliminate np.inf?</summary>
+
+No. Infinity is a numeric floating value, not NaN. Use replace([np.inf,-np.inf],np.nan) or a finite-value check when appropriate.
+
+</details>
+
+<details><summary>Variation: A DataFrame has 20% missing amount before parsing. After parsing, it has 35%. Is this necessarily a bug?</summary>
+
+No. Invalid numeric strings may become missing. Report invalid parse counts separately and validate business rules.
+
+</details>
+
 ## Concept check
 
 **Which operation counts missing values in each column: df.isna().sum() or df.isna().count()?**
