@@ -322,3 +322,40 @@ Yes. For X uniformly distributed on [-1,1], Y=X² is completely determined by X,
 </details>
 
 [下一章：Integrated Cases →](06-cases.md)
+
+## English assessment language and worked reasoning
+
+| English wording | 中文含義 |
+|---|---|
+| Given that an observation is positive | 條件在 positive 已發生 |
+| At least one / at most one / exactly one | 至少一個 / 至多一個 / 恰好一個 |
+| Draw without replacement | 不放回抽樣 |
+| Mutually exclusive / statistically independent | 互斥 / 統計獨立 |
+| Expected number of successes | 成功次數期望值 |
+| Reject the null hypothesis at the 5% significance level | 在 alpha=.05 下拒絕虛無假設 |
+| Fail to reject the null hypothesis | 無足夠證據拒絕，不代表證明 H0 |
+| Detect a specified effect with 80% power | 指定效果下拒絕 H0 的機率為 .8 |
+
+### Worked example: conditional probability
+
+A screening system flags 90% of fraudulent transactions and 5% of legitimate transactions. Fraud prevalence is 2%. What proportion of flagged transactions are actually fraudulent?
+
+想求 P(fraud | flagged)，不是 P(flagged | fraud)。以 10,000 筆作例：fraud 200 筆，flagged fraud 180；legitimate 9,800 筆，flagged legitimate 490。因此 precision=180/(180+490)=26.87%。高 recall 並不等於高 precision，base rate 影響 posterior。
+
+### Worked example: choosing the distribution
+
+A merchant has 10 orders, 3 fraudulent. Select 4 uniformly without replacement. What is the probability of exactly two fraudulent orders?
+
+母體固定且不放回，使用 hypergeometric：C(3,2)C(7,2)/C(10,4)=63/210=.30。若每次獨立且 fraud probability 固定 .3，才是 Binomial(4,.3)，兩者不可混用。
+
+### Worked example: inference
+
+A treatment changes conversion from 10% to 11%; the two-sided p-value is .03. What can be concluded at alpha=.05?
+
+Reject H0 of equal conversion rates under the test assumptions. Absolute lift=1 percentage point; relative lift=10%. p=.03 is not a 97% probability that treatment works. Assess CI, business cost, guardrails and test validity. Power is defined under a specified alternative, not conditional on observing a significant result.
+
+<details><summary>Concept check: If the sample size quadruples, does the standard error of the mean halve under IID sampling?</summary>
+
+Yes, SE=SD/sqrt(n), holding population SD constant. This reduces sampling uncertainty, not systematic selection bias.
+
+</details>
