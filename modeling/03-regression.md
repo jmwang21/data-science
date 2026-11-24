@@ -21,6 +21,34 @@ rmse = mean_squared_error(y_test, pred)**0.5
 r2 = r2_score(y_test, pred)
 ```
 
+## Implementation — choose a model, not just a metric
+
+```python
+from sklearn.datasets import make_regression
+from sklearn.model_selection import train_test_split
+from sklearn.dummy import DummyRegressor
+from sklearn.linear_model import Ridge, Lasso
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error
+X,y=make_regression(n_samples=200,n_features=8,noise=10,random_state=42)
+Xtr,Xv,ytr,yv=train_test_split(X,y,test_size=.25,random_state=42)
+models={
+    'median':DummyRegressor(strategy='median'),
+    'ridge':make_pipeline(StandardScaler(),Ridge(alpha=1)),
+    'lasso':make_pipeline(StandardScaler(),Lasso(alpha=.1)),
+    'forest':RandomForestRegressor(n_estimators=100,min_samples_leaf=3,random_state=42)
+}
+scores={}
+for name,model in models.items():
+    model.fit(Xtr,ytr)
+    scores[name]=mean_absolute_error(yv,model.predict(Xv))
+best=min(scores,key=scores.get)
+```
+
+Regularized linear models benefit from appropriate feature scaling because coefficient penalties depend on units. RF handles nonlinear interactions with little scaling need. This synthetic example has no final test: scores are development estimates, not unbiased final performance. Real mixed-type features require preprocessing pipeline.
+
 ## How the loss changes the answer
 
 | Actual | Model A | Model B |
