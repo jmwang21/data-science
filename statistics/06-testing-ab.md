@@ -113,17 +113,13 @@ $$n_{per\ group}\approx\frac{2\sigma^2(z_{1-\alpha/2}+z_{1-\beta})^2}{\delta^2}$
 
 二元轉換率規劃可用 baseline p 的 variance p(1-p) 做簡化近似。Baseline=.10，MDE=.01 absolute，alpha=.05，power=.8，約 14,128/group（使用 1.96/.8416 的常態分位數；精確規劃可能不同）。要考慮失訪、cluster effect、分流比例。
 
-## Statistical versus commercial decisions
+## Decision variation — significance versus equivalence
 
-A treatment conversion rate goes from 10% to 11%. Absolute lift=1 percentage point, relative lift=10%. p=.03 at alpha=.05 gives reject H0 under assumptions, not 97% probability treatment works. If operating costs exceed benefit, significance alone is insufficient.
+Suppose p=.03 and alpha=.05, but the 95% CI for profit uplift is [1,10] dollars while launch costs are 15 dollars per user. Statistical evidence of a positive effect does not establish profitability. Conversely, a nonsignificant result is not proof of no effect.
 
-| English wording | Interpretation |
-|---|---|
-| Fail to reject | Insufficient evidence, not proof H0 true |
-| Type I error | P(reject H0 given H0 true) |
-| Type II error | P(fail to reject given specified alternative) |
-| Power | 1−beta under specified alternative |
-| Minimum detectable effect | Planned effect size at target power |
+### English prompt: choose the test
+
+A company measures the same users' spending before and after a change. Which test compares mean spending? Use a paired t-test on within-user differences if assumptions hold, not Welch's independent-sample test. A randomized A/B with separate users instead uses an independent-sample test. Before/after without a control group cannot by itself establish a causal effect.
 
 ### Worked variation: sample size
 
