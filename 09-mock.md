@@ -7,6 +7,8 @@
 > **90 minutes · 11 original questions · 100 practice points**
 > This is a synthetic practice assessment, not an official test or a reproduction of actual questions. Suggested timing: Q1–2 (12 min), Q3–8 (18 min), Q9 (30 min), Q10 (18 min), Q11 (12 min). Run the code and verify outputs before time runs out.
 
+> **Optional:** 這是獨立原創限時模擬考，不是閱讀進度要求。此處 Q11 是分類評估；若要複習 free-form regression、70/15/15 split 與 MAE，另見 [House Price Regression](cases/03-house-price.md)。
+
 ## Probability & Statistics — 2 questions (10 points each)
 
 ### Q1 — Conditional Bernoulli trials
@@ -100,7 +102,7 @@ B, D. A leaks statistics; C uses the test set for selection, introducing optimis
 
 ### Q8 — Binary classification
 
-A. Logistic regression with the usual sigmoid models a probability of class 1.  
+A. With binary labels 0 and 1, logistic regression with the usual sigmoid models the probability of class 1.  
 B. Increasing C in sklearn LogisticRegression strengthens regularization.  
 C. `predict_proba` columns follow `classes_`.  
 D. F1 is the harmonic mean of precision and recall.
