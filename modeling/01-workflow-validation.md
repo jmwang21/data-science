@@ -43,7 +43,7 @@ test_auc = roc_auc_score(y_test, best_model.predict_proba(X_test)[:, 1])
 
 範例假設 features 已正確預處理、binary labels 為 0/1，且 `classes_[1]` 是正類。`predict()` 回傳預測類別；`predict_proba()` 回傳各類別機率（順序依 `classes_`）；`decision_function()` 可提供排序分數供 AUC 使用。`max(scores, key=scores.get)` 回傳 key；`max(scores.items(), key=lambda x:x[1])` 回傳 (key,value)。若同分，Python max 取第一個遇到的項目。
 
-> ⚠️ 已訓練的模型不可再用 validation fit 後拿 test 選模型。資料不應在選擇流程中流入 test。
+> 完成選模後，可以依事先決定的流程用 train+val 重訓；但不可用 test 選模型、調參或 threshold。下方兩個程式示例是替代流程，不是依序在同一個 test 上選模。
 
 ## K-Fold + StandardScaler + GridSearchCV（重要筆記） 
 
@@ -84,7 +84,19 @@ best_cv_auc = grid.best_score_
 test_auc = roc_auc_score(y_test, best_model.predict_proba(X_test)[:,1])
 ```
 
-若混合數值與類別特徵，將 StandardScaler 步驟換成 Chapter 02 的 ColumnTransformer。`model__C` 中 `model` 必須等於 Pipeline step 名稱。`refit=True` 會以最佳參數重新 fit 全部傳入 grid.fit 的資料；`grid.predict_proba()` 此時等同最佳 pipeline 的 predict_proba。5-fold × 4 組參數 = 20 次 CV fits，另有 1 次 refit。best_score_ 是最佳 CV 分數，不是無偏的 final test score。
+若混合數值與類別特徵，將 StandardScaler 步驟換成 [ColumnTransformer](../preprocessing/04-pipeline.md)。`model__C` 中 `model` 必須等於 Pipeline step 名稱。`refit=True` 會以最佳參數重新 fit 全部傳入 grid.fit 的資料；`grid.predict_proba()` 此時等同最佳 pipeline 的 predict_proba。5-fold × 4 組參數 = 20 次 CV fits，另有 1 次 refit。best_score_ 是最佳 CV 分數，不是無偏的 final test score。
+
+## Worked variation — 70/15/15 versus ordinary split
+
+若資料已提供 train.csv / val.csv / test.csv，直接讀取即可。若需自己切分 70/15/15，先留 30%，再將剩餘 30% 平分成 validation/test。Regression 不應直接 stratify continuous y；若有時間或群組依賴，改用相應 split。
+
+```python
+from sklearn.model_selection import train_test_split
+Xtr,Xrest,ytr,yrest=train_test_split(X,y,test_size=.30,random_state=42)
+Xv,Xt,yv,yt=train_test_split(Xrest,yrest,test_size=.50,random_state=42)
+```
+
+這是 IID regression 例子；分類可依各次 split 的 label stratify，少數類樣本必須足夠。CodeSignal-style free-form regression 案例請見 [06.3](../cases/03-house-price.md)。
 
 ## Choosing a split — variation scenarios
 
