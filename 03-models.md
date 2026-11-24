@@ -360,3 +360,37 @@ No. ROC-AUC measures ordering, while Log Loss penalizes inaccurate or overconfid
 </details>
 
 [下一章：ML Fundamentals →](04-ml.md)
+
+## English assessment language & model selection reasoning
+
+| English wording | 中文解讀 |
+|---|---|
+| Minimize mean absolute error on the validation set. | 以 validation MAE 最小化為模型選擇目標 |
+| Return predictions for the unlabeled test set. | 只輸出 test 預測，不自行計算 test metric |
+| Maximize recall subject to a minimum precision of 0.8. | precision≥.8 是限制，recall 才是目標 |
+| Select the model with the highest mean cross-validation score. | 比較各組 CV 平均分數 |
+| Refit the selected estimator on the development data. | 選定後以開發資料重訓，保留獨立 test |
+| Compare predicted probabilities rather than hard labels. | 使用 probability/score，而不是 0/1 labels |
+
+### Worked example: metric selection
+
+Actual prices: [100,200,300]. Model A predicts [110,210,250]; Model B predicts [125,225,275].
+
+A errors: [10,10,50], MAE=23.33, RMSE=sqrt(900) =30. B errors: [25,25,25], MAE=25, RMSE=25. A wins under MAE; B wins under RMSE. 這就是 objective 改變可能改變模型選擇的原因。不要在看到結果後隨意更換主要指標。
+
+### Diagnosing train versus validation error
+
+| Observation (error: lower is better) | Interpretation | Next action |
+|---|---|---|
+| train 5, validation 40 | plausible high variance | shallower trees, larger leaves, regularization, more representative data |
+| train 40, validation 42 | plausible high bias | richer features, nonlinear models, reduce excessive regularization |
+| train 10, validation 12 | small gap | compare baseline and business target |
+| train 10, validation 80 in new market | possible distribution shift | verify cohorts, split and feature availability |
+
+These are hypotheses, not diagnoses from scores alone. Check leakage, target noise, distribution and sample sizes. Hyperparameter tuning cannot repair invalid labels or a fundamentally wrong evaluation design.
+
+<details><summary>Concept check: Is a model with a lower validation MAE necessarily better for every segment?</summary>
+
+No. Global MAE is an average; a large segment may dominate it. Evaluate segment-specific error and costs while keeping the prescribed primary metric.
+
+</details>
