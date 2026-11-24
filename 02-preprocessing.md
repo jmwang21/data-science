@@ -124,3 +124,41 @@ Supervised selection (e.g. SelectKBest) must be inside the Pipeline. For imbalan
 | Duplication | Is the business key unique at the defined grain? |
 
 [下一章：Model Development & Evaluation →](03-models.md)
+
+## 8. Comprehensive review — preprocessing decisions (P0)
+
+| Method | When useful | Important parameters / risks |
+|---|---|---|
+| SimpleImputer | Numeric or categorical missing values | strategy=median/mean/most_frequent/constant; add_indicator |
+| KNNImputer (P1) | Similar observations carry information | n_neighbors; scale affects distance |
+| RobustScaler | Features with extreme values | median and interquartile range |
+| Normalizer | Text/vector similarity | norm=l2; scales each row, not each feature |
+| PowerTransformer | Skewed continuous variables | Yeo-Johnson accepts zero/negative; Box-Cox strictly positive |
+| OneHotEncoder | Nominal categories | handle_unknown, min_frequency |
+| OrdinalEncoder | Ordered categories | explicit categories; unknown_value with handle_unknown |
+| PolynomialFeatures | Linear model needs interactions | degree, include_bias=False; dimensionality grows rapidly |
+
+```python
+from sklearn.preprocessing import RobustScaler, PowerTransformer, PolynomialFeatures
+from sklearn.feature_selection import VarianceThreshold, SelectKBest, f_classif
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import make_pipeline
+# Numerical, imputed inputs; fit on training only.
+pipe = make_pipeline(VarianceThreshold(), RobustScaler(),
+                     SelectKBest(f_classif, k=3),
+                     LogisticRegression(max_iter=1000))
+# Requires at least 3 retained features.
+pipe.fit(X_train,y_train)
+```
+
+### Missing mechanisms and outliers
+MCAR: missingness unrelated to observed/unobserved values; MAR: explainable by observed variables; MNAR: depends on unobserved values even after conditioning. No universal imputation fixes MNAR. Investigate missingness by cohort. Mean preserves the observed mean but can reduce variance; median is robust; mode works for categories. Never fill unknown labels as negative without business justification.
+
+Z-score outlier rules suit roughly symmetric data; IQR is less sensitive to extremes. Use training quantiles to clip validation/test: `lo,hi=X_train['gmv'].quantile([.01,.99]); X_valid['gmv'].clip(lo,hi)`. Log1p handles zero and positive skew, but does not make all data normal. Feature scaling is not a remedy for outliers by itself.
+
+### Feature selection & imbalance
+Filter methods: variance, correlation, mutual information, ANOVA F score. Wrapper: RFE (iterative model fitting). Embedded: L1 coefficients or tree importance. Fit inside folds. PCA creates new components, not a subset of original columns.
+
+Class weights modify loss; random oversampling duplicates minority samples; undersampling removes majority examples; SMOTE interpolates neighbors (may be unsuitable for mixed categories and sparse data). Use an imbalanced-learn Pipeline when resampling in CV, and keep validation prevalence realistic. Threshold tuning is a separate decision. For high-cardinality categories, frequency encoding uses training counts; target encoding requires out-of-fold training features and a mapping learned from training labels for validation.
+
+Reference: [scikit-learn transformations](https://scikit-learn.org/stable/data_transforms.html).
