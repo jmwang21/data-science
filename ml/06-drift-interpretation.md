@@ -24,23 +24,15 @@
 | Customer segmentation | KMeans, hierarchical, DBSCAN | shape, density, scaling |
 | Reduce correlated features | PCA | variance preservation vs interpretability |
 
-Bias–variance decomposition under squared loss: expected prediction error includes squared bias, variance and irreducible noise. More capacity may reduce bias and increase variance; additional representative data can reduce variance. Learning curves help distinguish high bias (both errors high) from variance (large gap), but distribution shift can also create a gap.
-
-For drift, distinguish covariate shift P(X), label shift P(Y), and concept drift P(Y|X). Unlabeled data can reveal feature/score distribution changes but cannot directly establish actual accuracy. Monitoring should compare relevant cohorts and obtain delayed labels when possible.
-
-<details><summary>Concept check: why does adding trees differ from increasing tree depth?</summary>
-
-More trees reduce Monte Carlo variability of the ensemble estimate; greater depth increases individual tree capacity. They affect complexity and generalization differently.
-
-</details>
-
-
-
 ## Interpreting changes in deployment
 
-Covariate shift: P(X) changes with P(Y|X) stable; label shift: P(Y) changes with P(X|Y) stable; concept drift: P(Y|X) changes. Selection bias refers to nonrepresentative data acquisition.
+| Scenario | Likely shift to investigate |
+|---|---|
+| Customer income distribution changes, stable buying relation | Covariate shift |
+| Fraud prevalence changes, stable feature distributions conditional on fraud status | Label shift |
+| Same observed transaction features now imply higher fraud risk | Concept drift |
 
-Without labels, can monitor feature/score distribution, missingness, schema, cohort mix, PSI or KS statistics. Cannot directly measure accuracy or prove model degradation. Once labels arrive, evaluate performance by cohort and time. Drift metric thresholds are context dependent.
+These categories need assumptions; observing P(X) changes alone does not identify the shift mechanism. Once labels arrive, evaluate performance by cohort and time.
 
 Feature importance: tree impurity reduction may favor high-cardinality features; permutation importance measures performance drop when shuffling, can understate correlated features; SHAP attributes a model prediction relative to a baseline, not causal proof.
 
