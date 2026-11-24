@@ -87,6 +87,24 @@ monthly['past_2'] = g.transform(
 
 A 的 past_2 是 [NaN,100,150]。另注意 shift 是上一列而不是必然上一個月，缺少二月時三月可能連到一月。要計算 calendar-month growth，先建完整時間格或明確處理缺期。
 
+## Variation — calendar gaps and lag versus rolling
+
+**English:** Compute month-over-month growth, not growth since the last available observation.
+
+A has Jan=100 and Mar=300, but Feb absent. shift(1) on the observed rows compares Mar with Jan, giving 200%, which is not February-to-March growth. If absence means true zero revenue, add Feb=0 first; March growth is then undefined. If Feb is unknown, leave it missing rather than filling zero.
+
+<details><summary>Variation: For A with monthly GMV [100,200,300], predict March using a two-month historical average. Should the feature be 250 or 150?</summary>
+
+150: Jan and Feb are available before March. 250 includes March itself. Use shift(1) before rolling when current-period target is unknown.
+
+</details>
+
+<details><summary>Variation: A dataset contains duplicate merchant-month rows. Why can pivot fail while pivot_table succeeds?</summary>
+
+pivot needs unique (index,columns) combinations; pivot_table aggregates repeated combinations. Choose aggfunc='sum' for revenue, not default mean. No need to memorize advanced stack/unstack syntax.
+
+</details>
+
 ## Concept check
 
 **Why should the data be sorted before applying a grouped shift?**
