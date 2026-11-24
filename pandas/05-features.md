@@ -71,6 +71,31 @@ assign 可一次新增多個欄位，回傳新 DataFrame；lambda 可引用前�
 
 建模前問：在 prediction cutoff 時，這個 feature 是否已知？如果要預測 2 月 GMV，2 月實際 GMV 不能作為 feature。過去交易、商家註冊年資、截至 1 月底的統計可以使用。
 
+## Variation — conditional logic and index alignment
+
+**English:** Assign "high" when February GMV >= 100, "new" when January GMV is zero and February GMV is positive, otherwise "other". Give "new" priority.
+
+```python
+df['segment2'] = np.select(
+    [(df.jan_gmv.eq(0)) & (df.feb_gmv.gt(0)),df.feb_gmv.ge(100)],
+    ['new','high'],default='other')
+# A:high, B:high, C:new, D:other
+```
+
+If a new merchant also meets the high threshold, condition order determines assignment. Use explicit precedence when segments overlap.
+
+<details><summary>Variation: What is the difference between s.map({'A':1}) and s.replace({'A':1}) for an unmatched 'B'?</summary>
+
+map returns missing for unmatched B; replace preserves B. Choose mapping when you want unmatched values explicitly detectable, replace when only certain values should change.
+
+</details>
+
+<details><summary>Variation: A model predicts next-month churn. Can a ratio calculated from next-month orders be used because it does not directly contain the target?</summary>
+
+No, not if future orders are unavailable at prediction time. Feature availability matters even without direct target columns.
+
+</details>
+
 ## Concept check
 
 **A merchant has zero January revenue and positive February revenue. Is its month-over-month growth rate equal to 100%?**
