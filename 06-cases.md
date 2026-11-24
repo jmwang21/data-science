@@ -4,7 +4,7 @@
 
 [返回目錄](README.md)
 
-兩題分別對應 pandas 與 sklearn。先獨立解題，再展開答案。均使用合成資料；兩個案例均為原創合成練習，非正式考題。
+以下案例供閱讀完整流程與解法，可直接展開答案，不要求限時獨立作答。均為原創合成案例，非正式考題。
 
 ## Case A — Merchant Performance & Growth Opportunity
 
@@ -180,3 +180,81 @@ No feasible threshold means the operating constraint was not met on validation; 
 </details>
 
 [下一章：Cheat Sheet & Common Pitfalls →](07-review.md)
+
+## Case C — House price prediction: 完整閱讀範例（P0）
+
+此為原創 regression workflow，不是正式考題。假設 train.csv / val.csv 有 price，test.csv 無 price；三者均有 id 與相同 feature 欄位。目標為降低原始價格尺度 MAE。若題目提供 split，勿無故重切。
+
+### 1. 確定資料、baseline、評估與輸出契約
+MAE 越低越好；DummyRegressor(strategy='median') 作為最低基準。比較 regularized linear model、RandomForest、GradientBoosting。不同模型使用同樣資料與 metric。先檢查 schema、target 缺失、ID、數值及類別欄位。
+
+### 2. 完整可閱讀程式
+
+```python
+import pandas as pd
+from sklearn.compose import ColumnTransformer, make_column_selector
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.dummy import DummyRegressor
+from sklearn.linear_model import Ridge
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.model_selection import GridSearchCV, KFold
+from sklearn.metrics import mean_absolute_error
+from sklearn.base import clone
+
+def house_price_workflow(train,val,test):
+    features=train.columns.drop(['id','price']).tolist()
+    X,y=train[features],train.price
+    Xv,yv=val[features],val.price
+    Xt=test[features]
+    num=X.select_dtypes(include='number').columns.tolist()
+    cat=[c for c in features if c not in num]
+    # Dense OHE is suitable for moderate cardinality in this example.
+    pre=ColumnTransformer([
+        ('num',Pipeline([('imp',SimpleImputer(strategy='median')),
+                         ('scale',StandardScaler())]),num),
+        ('cat',Pipeline([('imp',SimpleImputer(strategy='most_frequent')),
+                         ('ohe',OneHotEncoder(handle_unknown='ignore',sparse_output=False))]),cat)
+    ])
+    specs={
+        'baseline':(DummyRegressor(strategy='median'),{}),
+        'ridge':(Ridge(),{'model__alpha':[.1,1,10]}),
+        'rf':(RandomForestRegressor(n_estimators=100,random_state=42),
+              {'model__min_samples_leaf':[1,5],'model__max_depth':[8,None]}),
+        'gb':(GradientBoostingRegressor(loss='absolute_error',random_state=42),
+              {'model__n_estimators':[100,200],'model__learning_rate':[.05,.1]})
+    }
+    cv=KFold(5,shuffle=True,random_state=42)
+    fitted,scores={},{}
+    for name,(est,params) in specs.items():
+        search=GridSearchCV(Pipeline([('pre',clone(pre)),('model',est)]),
+                           params,cv=cv,scoring='neg_mean_absolute_error',n_jobs=-1)
+        search.fit(X,y)
+        fitted[name]=search
+        scores[name]=mean_absolute_error(yv,search.predict(Xv))
+    best=min(scores,key=scores.get)
+    # Refit only after selection; validation no longer independent afterwards.
+    final=clone(fitted[best].best_estimator_).fit(
+        pd.concat([X,Xv],ignore_index=True),
+        pd.concat([y,yv],ignore_index=True))
+    submission=pd.DataFrame({'id':test.id,'price':final.predict(Xt)})
+    assert len(submission)==len(test)
+    assert submission.price.notna().all()
+    return submission,scores,best,fitted[best].best_params_
+
+# submission,scores,best,params=house_price_workflow(
+#     pd.read_csv('train.csv'),pd.read_csv('val.csv'),pd.read_csv('test.csv'))
+# submission.to_csv('submission.csv',index=False)
+```
+
+此範例假設每份資料已具有合理 schema、數值欄位型別一致、target 非缺失、至少五筆 training、類別為字串。高 cardinality 需避免大型 dense OHE；sklearn 舊版 OneHotEncoder 使用 sparse=False。若資料有 group/time dependency，替換 KFold 為對應切分。樹不需要 scaling；為簡潔使用共同 pipeline。實際輸出欄位與格式必須依題意修改。
+
+### 3. 如何改善 MAE
+先分析 residual=y-prediction：正值為低估。依 price band、地區及房屋大小檢查 MAE；觀察訓練與 validation 差距。可能改善：房齡、面積與區域交互特徵；調整 max_depth/min_samples_leaf；比較 loss；對右偏 target 做 log1p 並在 expm1 後的原始尺度驗證。不得因 validation 表現反覆嘗試太多組合而把 validation 當成獨立 test。
+
+<details><summary>Concept check：為何 CV 的最佳 negative MAE 要取最大，但 validation MAE 要取最小？</summary>
+
+scikit-learn scorer 統一使用 higher-is-better，所以 negative MAE 是 MAE 乘以 −1；直接使用 mean_absolute_error 則越低越好。若 test 沒有 labels，不能自行計算 test MAE，只能產生 predictions。
+
+</details>
