@@ -230,3 +230,56 @@ A left join guarantees retention, not uniqueness. Each matching right row produc
 </details>
 
 [下一章：Preprocessing →](02-preprocessing.md)
+
+## Core worked examples & English assessment wording
+
+| English requirement | Meaning |
+|---|---|
+| Retain all merchants, including those with no transactions. | 保留沒有交易的商家，先聚合再 left join |
+| Return one row per customer. | 輸出粒度為 customer |
+| Break ties by ID in ascending order. | 同分用 ID 升冪排序 |
+| Treat undefined growth rates as missing. | 分母為零時保留 NaN |
+| Compute the proportion within each group. | 群組內比例，不是全體比例 |
+
+### GroupBy: aggregation, transformation and filtering
+
+假設交易資料如下。閱讀時重點是辨認輸出粒度，不需要背誦所有 groupby API。
+
+```python
+import pandas as pd
+import numpy as np
+df = pd.DataFrame({'merchant':['A','A','B','B','C'],
+                   'amount':[100,300,200,np.nan,50]})
+summary = df.groupby('merchant',as_index=False).agg(
+    revenue=('amount','sum'),
+    transactions=('amount','size'),
+    valid_amounts=('amount','count'))
+df['share'] = df.amount / df.groupby('merchant').amount.transform('sum')
+retained = df.groupby('merchant').filter(lambda g: len(g)>=2)
+```
+
+| merchant | revenue | transactions | valid_amounts |
+|---|---:|---:|---:|
+| A | 400 | 2 | 2 |
+| B | 200 | 2 | 1 |
+| C | 50 | 1 | 1 |
+
+share 依原列順序為 .25、.75、1、NaN、1；retained 保留 A、B 的四列。agg 改變粒度，transform 保留原資料的 index 與列數，filter 以群組為單位決定是否保留整組。size 包含缺失列，count 排除缺失值。若整組數值未知，sum(min_count=1) 可以保留 NaN，避免誤認為零。
+
+### Merge: why data grain matters
+
+```python
+customers = pd.DataFrame({'merchant':['A','B','D']})
+out = customers.merge(summary,on='merchant',how='left',
+                      validate='one_to_one')
+```
+
+輸出 A、B、D，D 的統計值為 NaN；C 不在目標母體中。若無交易的商家應視為零交易，才對計數及營收補零。left join 不保證列數不變：右表 key 重複就可能造成 fanout。多對多的事件表應分別聚合再合併。
+
+<details><summary>Concept check: Which method returns the group mean aligned with each original row?</summary>
+
+transform('mean')；agg('mean') 則每組一個結果。不能直接假設 agg 的 index 能對齊原資料。
+
+</details>
+
+Priority: stack/unstack、複雜 MultiIndex 與冷門參數只需辨認用途；常用 filtering、aggregation、merge、datetime、window、缺失處理需熟練。
