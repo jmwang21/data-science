@@ -18,9 +18,9 @@ IID、有限 variance 下，sample mean 的期望 μ，variance σ²/n，standar
 
 比例的大樣本近似：$\hat p\pm z\sqrt{\hat p(1-\hat p)/n}$；小樣本/接近 0 或 1 時可使用 Wilson interval。
 
-## Population SD versus standard error
+## Worked variation — individual versus sample mean
 
-Population SD describes individual variation; SE describes uncertainty of sample mean. CLT concerns the sampling distribution, not raw data. n=30 is not a universal guarantee, especially with strong skew or dependence.
+Individual order amount is Normal(mean=100, SD=20). P(X>110)=1−Φ(.5)≈.3085. For the mean of 25 independent orders, SE=20/5=4 and P(mean>110)=1−Φ(2.5)≈.0062. Same threshold, different random variable. The z-score denominator depends on whether the question concerns an individual or sample mean.
 
 ### Worked example
 
