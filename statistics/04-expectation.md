@@ -57,14 +57,15 @@ Covariance measures joint variation in original units. Pearson r=Cov(X,Y)/(SD(X)
 
 Conditional expectation E[Y|X] is the mean within a specified X; law of total expectation E[Y]=E[E[Y|X]], total variance Var(Y)=E[Var(Y|X)]+Var(E[Y|X]). Example: half customers have conditional mean 10, half 20, both conditional variance 4. Overall mean 15, variance 4+25=29.
 
-### Additional distributions
-Geometric(p), trials until first success: P(T=k)=(1−p)^(k−1)p, E[T]=1/p, Var(T)=(1−p)/p². Uniform(a,b): mean (a+b)/2, variance (b−a)²/12; P(c≤X≤d)=(d−c)/(b−a) within support. For geometric p=.2, first success on third trial=.8²×.2=.128. For continuous uniform 0–10, probability of 2–5=.3.
+### Worked descriptive variation — Simpson's paradox
+
+Group A: 9 of 10 successes for easy cases, 1 of 10 for hard cases. Group B: 80 of 100 for easy, 0 of 1 for hard. A is better within both strata (.9>.8, .1>0), but aggregate A=10/20=.5 and B=80/101≈.792. Group composition reverses the comparison. Report stratified metrics and investigate confounding.
 
 ## Worked variation — transformation and dependence
 
 A lottery pays 100 with probability .2 and zero otherwise. E[X]=20, Var(X)=100²×.2−20²=1600. A fee of 5 yields E[X−5]=15, variance unchanged. Doubling payoff yields E[2X]=40, Var(2X)=6400.
 
-For independent X,Y with variances 4 and 9, Var(X+Y)=13. If covariance=2, Var(X+Y)=17; Var(X−Y)=9. Variance nonnegative; covariance signed. Pearson correlation measures linear relationships; Spearman uses ranks.
+For independent X,Y with variances 4 and 9, Var(X+Y)=13. If covariance=2, Var(X+Y)=17; Var(X−Y)=9. Variance nonnegative; covariance signed.
 
 <details><summary>Variation 1: Four independent draws with replacement from five equally likely card types. Expected number of distinct types?</summary>
 
