@@ -6,7 +6,7 @@
 
 ## Scaling & encoding 
 
-StandardScaler: $z=(x-\mu)/\sigma$；MinMaxScaler: $(x-min)/(max-min)$。LR、SVM、KNN、K-means 常受尺度影響；tree-based 模型通常不需要 scaling。OneHotEncoder 適用 nominal category；OrdinalEncoder 適用有序類別或明確編碼需求，不應任意假設順序。未知類別可用 handle_unknown='ignore'。
+StandardScaler: $z=(x-\mu)/\sigma$；MinMaxScaler: $(x-min)/(max-min)$。LR、SVM、KNN、K-means 常受尺度影響；tree-based 模型通常不需要 scaling。OneHotEncoder 適用 nominal category；OrdinalEncoder 適用有序類別或明確編碼需求，不應任意假設順序。OneHotEncoder 未知類別可用 handle_unknown='ignore'；OrdinalEncoder 可用 handle_unknown='use_encoded_value', unknown_value=-1。
 
 ## Worked examples — scaling, encoding and missingness 
 
@@ -20,33 +20,7 @@ Training values [10,20,30] have mean 20 and population SD ≈8.165. StandardScal
 
 The example assumes OHE fit on basic and pro, `handle_unknown='ignore'`, no dropped column. Unknown levels are not automatically missing values. High-cardinality merchant ID generally needs a justified encoding or exclusion; target encoding must be learned without leaking validation labels.
 
-### Leakage-safe imputation
-
-```python
-from sklearn.impute import SimpleImputer
-imp = SimpleImputer(strategy='median')
-train_num = imp.fit_transform(X_train[['monthly_gmv']])
-valid_num = imp.transform(X_valid[['monthly_gmv']])
-```
-
-Never fit on combined train/validation. Median is robust to extreme observations but not universally optimal; missingness indicators can help if absence carries signal. Avoid imputing target labels for supervised evaluation.
-
-### Feature selection & imbalance
-
-Supervised selection (e.g. SelectKBest) must be inside the Pipeline. For imbalanced classification, `class_weight='balanced'` may change the loss emphasis but does not guarantee better recall or precision at a chosen threshold. Resampling must occur within training folds, never on validation/test. Evaluate on the distribution relevant to deployment.
-
-### Data quality checklist
-
-| Check | Question |
-|---|---|
-| Schema | Are numeric fields numeric and dates parsed? |
-| Grain | Is a row an order, merchant, or merchant-month? |
-| Completeness | Is missing value absence of data or a true zero? |
-| Freshness | Was the feature available at prediction time? |
-| Validity | Is negative GMV a refund, error, or legitimate value? |
-| Duplication | Is the business key unique at the defined grain? |
-
-## Worked variation: choice of scale and encoding
+## How to choose a transformation
 
 StandardScaler 是 feature-wise；Normalizer 是 row-wise。若某筆向量 [3,4] 做 L2 normalize 得 [0.6,0.8]，不是標準化為 mean=0。
 
@@ -69,7 +43,11 @@ print(enc.transform(pd.DataFrame({'tier':['new','pro']})))
 # [[0.,0.],[0.,1.]]
 ```
 
-sklearn 1.2+ 使用 sparse_output；舊版為 sparse。避免記所有冷門參數。Target encoding 需 out-of-fold，否則訓練列的 target 會直接進入自身 feature。
+sklearn 1.2+ 使用 sparse_output；舊版為 sparse。高 cardinality 時保留稀疏矩陣或比較頻率編碼。Target encoding 必須防止自身 label 進入 feature，training 可使用 out-of-fold encoding。
+
+### Variation: nonlinear transformations
+
+對 [1,10,1000]，log1p 轉換約 [0.693,2.398,6.909]，壓縮大值間差距。這不是 scaling：它改變分布形狀。Box-Cox 要求 strictly positive；Yeo-Johnson 可處理 0/負值（P1）。若模型目標是原尺度的 MAE，對 target 做 log transform 後必須反轉換再評分。
 
 <details><summary>Variation: A zipcode is stored as an integer. Should it be standardized as a continuous feature?</summary>
 
