@@ -267,3 +267,45 @@ If probabilities are unequal, this simple harmonic formula does not apply. Witho
 Use indicator variables: each type appears with probability 1-(2/3)^5, hence E[distinct]=3[1-(2/3)^5]=211/81≈2.6049. Inclusion-exclusion gives P(all)=1-3(2/3)^5+3(1/3)^5=150/243≈0.6173. The indicators for distinct types are not independent.
 
 </details>
+
+## 15. Descriptive statistics and joint distributions (P0)
+
+Mean uses all values and is sensitive to extremes; median is the 50th percentile; mode is the most frequent. For [1,2,3,4,100], mean=22, median=3. Sample variance divides squared deviations by n−1; standard deviation is its square root. IQR=Q3−Q1. Quantile algorithms can differ for small samples.
+
+Covariance measures joint variation in original units. Pearson r=Cov(X,Y)/(SD(X)SD(Y)) measures linear association; Spearman measures monotonic association via ranks. Zero correlation does not imply independence (e.g. symmetric X and Y=X²). Correlation does not establish causality; confounding and Simpson's paradox can reverse aggregate patterns.
+
+Conditional expectation E[Y|X] is the mean within a specified X; law of total expectation E[Y]=E[E[Y|X]], total variance Var(Y)=E[Var(Y|X)]+Var(E[Y|X]). Example: half customers have conditional mean 10, half 20, both conditional variance 4. Overall mean 15, variance 4+25=29.
+
+### Additional distributions
+Geometric(p), trials until first success: P(T=k)=(1−p)^(k−1)p, E[T]=1/p, Var(T)=(1−p)/p². Uniform(a,b): mean (a+b)/2, variance (b−a)²/12; P(c≤X≤d)=(d−c)/(b−a) within support. For geometric p=.2, first success on third trial=.8²×.2=.128. For continuous uniform 0–10, probability of 2–5=.3.
+
+## 16. Choosing statistical tests (P0)
+
+| Question | Method | Key assumptions / interpretation |
+|---|---|---|
+| One mean vs target | One-sample t-test | IID; exact under normal population |
+| Two independent means | Welch t-test | Independent observations, unequal variance allowed |
+| Before/after same subject | Paired t-test | Analyze within-pair differences |
+| Two proportions | Two-proportion z-test | Sufficient expected counts; independent units |
+| Categorical association | Chi-square independence | Adequate expected cell counts; Fisher exact for small 2×2 |
+| Three or more means | ANOVA | Classical version assumes independent normal errors and equal variance |
+| Rank comparison | Mann–Whitney U (P1) | Independent samples; not universally a median test |
+
+Welch statistic=(mean_A−mean_B)/sqrt(s_A²/n_A+s_B²/n_B). Example: means 10 and 12, each n=100 and SD=5, SE difference≈.707, t≈−2.83. A two-sided test considers either direction. Use effect size and CI in addition to p-value.
+
+Chi-square statistic=sum((O−E)²/E), with E=row total×column total/grand total; df=(r−1)(c−1). ANOVA F compares between-group to within-group variation; a significant result does not identify which groups differ. Preplanned contrasts or adjusted post-hoc tests address that question.
+
+```python
+from scipy import stats
+a = [10,11,9,12,8]
+b = [12,13,11,14,10]
+stats.ttest_ind(a,b,equal_var=False)
+stats.ttest_rel(a,b) # only if observations really are paired
+stats.chi2_contingency([[30,70],[45,55]], correction=False)
+stats.f_oneway(a,b,[11,12,10,13,9])
+```
+
+### Sampling and inference pitfalls
+Selection bias is systematic sampling distortion; larger n reduces random uncertainty but not systematic bias. Bootstrap resamples observations with replacement and recomputes the statistic to estimate uncertainty; preserve clusters for dependent data. A permutation test shuffles exchangeable labels under H0; randomization design matters. One-sided hypotheses must be specified before seeing outcomes. If testing 20 independent true nulls at .05, chance at least one false rejection is 1−.95²⁰≈64.2%; Bonferroni uses .05/20=.0025 per test.
+
+Reference: [SciPy statistics](https://docs.scipy.org/doc/scipy/reference/stats.html).
