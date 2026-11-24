@@ -173,3 +173,48 @@ Group by category, rank descending with dense method, then filter rank<=2. Resto
 </details>
 
 [下一章：Preprocessing →](02-preprocessing.md)
+
+## 9. Comprehensive review — ingestion, indexing, transformation and text (P0)
+
+| Operation | Example | Key distinction |
+|---|---|---|
+| Inspect | `df.shape; df.info(); df.describe(include='all')` | Check types and grain before arithmetic |
+| Select | `df.loc[:, ['amount','status']]` | Single column returns Series; list returns DataFrame |
+| Unique | `s.unique(); s.nunique(); s.value_counts(dropna=False)` | Counts vs distinct values |
+| Rename | `df.rename(columns={'amount':'gmv'})` | Returns new object by default |
+| Sort | `df.sort_values(['amount','order_id'],ascending=[False,True])` | Explicit tie-break |
+| Index | `df.set_index('order_id').reset_index()` | Index labels need not be unique |
+| Filter | `df.loc[df.status.isin(['completed','paid'])]` | Membership test |
+| Assign | `df.assign(net=lambda d:d.amount*0.9)` | Returns new frame |
+| Concatenate | `pd.concat([a,b],ignore_index=True)` | Column names aligned |
+| Cross-tab | `pd.crosstab(df.category,df.status,normalize='index')` | Row proportions |
+
+### Text, mapping and conditional features
+
+```python
+s = pd.Series(['  ABC-123 ', 'def-456', None], dtype='string')
+clean = s.str.strip().str.lower()
+code = clean.str.extract(r'([a-z]+)-(\d+)', expand=True)
+flag = clean.str.contains('abc', regex=False, na=False)
+# clean: abc-123, def-456, <NA>; flag: True, False, False
+df['bucket'] = pd.cut(df.amount, bins=[-np.inf,100,500,np.inf],
+                      labels=['small','medium','large'])
+df['segment'] = np.select([df.amount>=500, df.amount>=100],
+                          ['large','medium'], default='small')
+```
+
+`map` maps individual Series values; `apply` calls a function on a Series or along a DataFrame axis; prefer vectorization where possible. `axis=1` applies to rows. `np.select` picks the first true condition, so order matters. `cut` uses fixed boundaries; `qcut` uses empirical quantiles and can fail on duplicate edges. Avoid chained assignment: use `df.loc[mask,'col']=value`. Series assignment aligns index labels, not just row positions.
+
+### Additional aggregation and dates (P0)
+
+```python
+orders['order_date'] = pd.to_datetime(orders.order_date)
+daily = orders.set_index('order_date').amount.resample('D').sum()
+counts = orders.groupby('merchant_id',dropna=False).size()
+large_groups = orders.groupby('merchant_id').filter(lambda g: len(g)>=2)
+orders['pct_change'] = orders.sort_values('order_date').groupby('merchant_id').amount.pct_change(fill_method=None)
+```
+
+For a stable time series sort by entity and timestamp, decide how to treat gaps and ties, and distinguish event count from calendar duration. `groupby(dropna=False)` retains missing group keys. `explode` expands list-valued cells into rows; `stack/unstack` reshape index levels (P1). Do not confuse weighted averages with averages of group averages.
+
+Reference: [pandas user guide](https://pandas.pydata.org/docs/user_guide/index.html).
