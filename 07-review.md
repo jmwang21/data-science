@@ -4,6 +4,8 @@
 
 [返回目錄](README.md)
 
+> 這裡是速查，不是主要教學。需要原因、完整範例及變化題時，請回到各 Lesson。
+
 ## 1. pandas exam quick reference
 
 | Task | Syntax |
@@ -43,7 +45,7 @@
 | CV | `StratifiedKFold(5,shuffle=True,random_state=42)` |
 | Grid | `GridSearchCV(pipe,{'model__C':[.1,1,10]},cv=cv,scoring='roc_auc',refit=True)` |
 | Best | `grid.best_params_`, `grid.best_score_`, `grid.best_estimator_` |
-| Dict selection | `max(scores,key=scores.get)` |
+| Dict selection | `max(scores,key=scores.get)` for AUC; `min(scores,key=scores.get)` for MAE |
 
 ## 3. Common pitfalls & concept corrections
 
@@ -52,13 +54,13 @@
 | Missing count | `df.isna().count()` | `.sum()` counts True |
 | Tenure | date subtraction alone | `.dt.days`; correct reference date |
 | Join | left join → remove unmatched rows | clean & aggregate orders → left join merchant universe |
-| Conditional GMV | filter subset Series in assign | valid via index alignment on original data; `.where` clearer |
+| Conditional GMV | filter cancelled before computing all-order completion rate | use Boolean indicators and conditional amount; denominator must match requirement |
 | Growth | `to_numeric(errors='coerce')` on inf | replace denominator 0 or replace ±inf |
 | Category rank | global `rank()` | groupby category then rank |
 | Output | `df.columns=cols` | `df[cols]` selects/reorders; assignment renames |
 | Binary flag | bool output | `.astype(int)` when 0/1 specified |
 | Dict | `scores['name']=score` | `scores[name]=score` |
-| Model selection | fit already-trained model on validation; score test | use validation predict_proba, no refit in that task |
+| Model selection | select hyperparameters using test score | choose on validation/CV; optional final refit on development data after selection |
 | Threshold | compare `y_valid` to threshold | compare `valid_prob` to threshold |
 | Optimization | maximize precision only | filter precision constraint, maximize recall |
 | Tie | extra nested conditions | ascending thresholds + recall >= best_recall |
@@ -89,7 +91,7 @@ flowchart LR
 - [ ] Check probability vs label inputs and metric direction.
 - [ ] Run code; verify exact output schema and small hand-calculated example.
 
-練習目標：限時完成並實際執行測試；核對資料粒度、邊界條件與輸出格式。
+自我審視：閱讀解法時核對資料粒度、邊界條件與輸出格式，不要求限時完成。
 
 ## 5. Reference documentation
 
