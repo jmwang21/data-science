@@ -176,3 +176,48 @@ No. KNN/SVM and regularized linear models often benefit; tree splits are usually
 </details>
 
 [下一章：Model Development & Evaluation →](03-models.md)
+
+## Core worked examples & English assessment wording
+
+| English requirement | 中文解讀 |
+|---|---|
+| Impute missing numerical values using the training median. | 用訓練中位數補值 |
+| Handle unseen categories at inference time. | 預測時處理未知類別 |
+| Fit the scaler on training data only. | scaler 只在 train fit |
+| Construct features available at the prediction cutoff. | 特徵只能用預測時點已取得的資訊 |
+
+### Scaling and imputation: why fit matters
+
+Training values [10,20,30] have mean 20 and population SD sqrt(200/3)≈8.165. Validation value 100 maps to (100−20)/8.165≈9.798. 不應在 validation 重新計算平均與 SD；極端 z-score 不一定是錯誤。MinMaxScaler 對超出訓練範圍的新值亦可能輸出大於 1。
+
+Mean imputation 對極端值敏感；median 較穩健；most_frequent 適合類別，但可能強化多數類別。Missing indicator 在缺失本身帶有資訊時有用。補值不是推斷未知真值，只是讓模型能使用合理的表示。
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
+train = pd.DataFrame({'income':[10.,20.,30.,np.nan],
+                      'tier':['basic','pro','basic','pro']})
+valid = pd.DataFrame({'income':[100.,np.nan],
+                      'tier':['new','basic']})
+pre = ColumnTransformer([
+    ('num',Pipeline([('impute',SimpleImputer(strategy='median')),
+                     ('scale',StandardScaler())]),['income']),
+    ('cat',OneHotEncoder(handle_unknown='ignore',sparse_output=False),['tier'])
+])
+Xtr=pre.fit_transform(train)
+Xv=pre.transform(valid)
+print(pre.get_feature_names_out())
+print(Xv)
+```
+
+訓練 median=20，補值後 SD=sqrt(50)≈7.071；validation 第一列為 [11.314,0,0]，第二列為 [0,1,0]。類別順序 basic、pro；未知 new 的 one-hot 全零。此處使用 sklearn 1.2+ 的 sparse_output 參數。樹模型通常不需 scaling；距離、線性正則化及 SVM 常需要。所有有學習參數的轉換必須放入 CV pipeline。
+
+<details><summary>Concept check: Does fitting a scaler on the entire dataset before cross-validation cause leakage even without target labels?</summary>
+
+Yes. Validation fold 的 feature distribution 已影響轉換參數，這不符合獨立 validation 流程。應在每個 training fold fit scaler。
+
+</details>
