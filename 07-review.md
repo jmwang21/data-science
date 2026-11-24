@@ -98,3 +98,33 @@ flowchart LR
 - [SciPy stats](https://docs.scipy.org/doc/scipy/reference/stats.html)
 
 These are links for further reading, not claims that the live documentation was checked for this edition.
+
+## 6. Model & statistics quick reference（P0）
+
+| Topic | Key relationship / choice |
+|---|---|
+| Regression baseline | MAE → median; MSE → mean |
+| Regression metrics | MAE 原單位；RMSE 放大大誤差；R² 可負；MAPE 不適合零值 |
+| Classification | ROC-AUC ranking；AP 重視正類；Log Loss 機率品質；F1 threshold dependent |
+| Regularization | Ridge/Lasso alpha 越大越強；LogisticRegression C 越小越強 |
+| RF | n_estimators、max_features、max_depth、min_samples_leaf |
+| Boosting | learning_rate × n_estimators；depth 控制每棵樹 |
+| KNN/SVM/PCA | 尺度通常重要 |
+| Clustering | K-means inertia 非遞增；silhouette 越高通常越好；DBSCAN 不需指定 K |
+| Imputation | training fit，validation/test transform；NaN 不等於 0 |
+| Feature selection | supervised selector 放進 CV pipeline |
+| Bayes | posterior = likelihood × prior / evidence |
+| Independence | P(A∩B)=P(A)P(B)；without replacement 通常不獨立 |
+| Binomial | 固定 n、獨立、固定 p；mean=np，variance=np(1-p) |
+| Hypergeometric | 有限母體不放回 |
+| Poisson / Exponential | 區間事件數 / 等待時間 |
+| CLT | sample mean 的抽樣分布近似常態，不是原始資料 |
+| SE | SD/sqrt(n) under IID |
+| CI | point estimate ± critical value × SE |
+| p-value | H0 下至少同樣極端 statistic 的機率 |
+| Power | 1−β，特定 alternative 下拒絕 H0 的機率 |
+| Sample size | MDE 減半約需四倍；power↑、alpha↓、variance↑ 均提高需求 |
+| Test choice | Welch：獨立均值；paired t：配對；proportion z：比例；chi-square：類別關聯 |
+
+### 自我審視：能否解釋而非背誦？
+能否說明資料粒度、join fanout、缺失與零、fit/transform、不同 split 的部署含義、模型參數如何影響 bias/variance、指標與商業成本的關係、p-value 與 power 的差別？若不確定，回到相應核心章節閱讀 worked example，而非重複大量題目。
