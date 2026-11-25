@@ -6,9 +6,9 @@
 
 ## Bayes' theorem & total probability 
 
-$$P(A\mid B)=\frac{P(B\mid A)P(A)}{P(B)}$$
+**P(A | B) = P(B | A) × P(A) / P(B)**
 
-若 $A_1,\ldots,A_k$ 互斥且涵蓋全部：$P(B)=\sum_i P(B\mid A_i)P(A_i)$。
+若 A₁, …, Aₖ 互斥且涵蓋全部：`P(B) = Σᵢ P(B | Aᵢ) × P(Aᵢ)`。
 
 ### Worked example — Fraud detection
 
@@ -19,7 +19,7 @@ Fraud prevalence=1%, sensitivity=90%, FPR=5%。10,000 筆交易：
 | Fraud | 90 | 10 |
 | Legitimate | 495 | 9405 |
 
-$$P(Fraud\mid Flagged)=\frac{.9\times .01}{.9\times .01+.05\times .99}=15.38\%$$
+**P(Fraud | Flagged) = (.9 × .01) / (.9 × .01 + .05 × .99) = 15.38%**
 
 即使 recall 高，因低 base rate，precision 仍可能低。當新市場 prevalence 改變，若 TPR/FPR 不變，precision 仍會改變。Bayes 不能隨意假設證據 conditionally independent；只有已知給定類別下獨立，才能將 likelihood 相乘。
 
