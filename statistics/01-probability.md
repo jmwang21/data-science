@@ -8,17 +8,17 @@
 
 | Concept | Formula |
 |---|---|
-| Complement | $P(A^c)=1-P(A)$ |
-| Union | $P(A\cup B)=P(A)+P(B)-P(A\cap B)$ |
-| Conditional | $P(A\mid B)=P(A\cap B)/P(B)$ |
-| Multiplication | $P(A\cap B)=P(A\mid B)P(B)$ |
-| At least one | $1-P(\text{none})$ |
+| Complement | `P(Aᶜ) = 1 − P(A)` |
+| Union | `P(A ∪ B) = P(A) + P(B) − P(A ∩ B)` |
+| Conditional | `P(A given B) = P(A ∩ B) / P(B)` |
+| Multiplication | `P(A ∩ B) = P(A given B) × P(B)` |
+| At least one | `1 − P(none)` |
 
 Example: 40% buy A, 30% buy B, 10% buy both. P(A or B)=.6, P(A only)=.3, P(A|B)=1/3. Mutually exclusive means intersection=0；independent means intersection=P(A)P(B)。非零機率的互斥事件不獨立。
 
 ## Independence 
 
-Independent events: $P(A\cap B)=P(A)P(B)$；等價於 $P(A\mid B)=P(A)$（分母非零）。Conditional independence: $P(A,B\mid C)=P(A\mid C)P(B\mid C)$，不代表 marginal independence。
+Independent events: `P(A ∩ B) = P(A) × P(B)`；等價於 `P(A | B) = P(A)`（分母非零）。Conditional independence: `P(A,B | C) = P(A | C) × P(B | C)`，不代表 marginal independence。
 
 Three independent attempts, each success=.2: none=.8³=.512, at least one=.488, exactly one=3(.2)(.8²)=.384。
 
