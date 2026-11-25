@@ -1,51 +1,78 @@
-# 04.6 — Domain Shift, Model Interpretation & Selection
+# 04.15 — Domain Shift, Interpretation & Model Selection
 
-[← Chapter index](../04-ml.md) · [Previous](05-generalization.md)
+[← ML index](../04-ml.md) · [Previous](validation-leakage.md)
 
-> Core review · 中文觀念解釋、English terminology、worked examples、variation questions。先理解，再展開答案。
+## 1. Distribution shift
 
-## Domain shift & monitoring 
+| Type | Definition | Scenario |
+|---|---|---|
+| Covariate shift | P(X) changes; P(Y given X) stable | New market has different income mix |
+| Label shift | P(Y) changes; P(X given Y) stable | Fraud prevalence changes |
+| Concept drift | P(Y given X) changes | Same features now imply different risk |
 
-- Covariate shift：P(X) 改變；在嚴格定義下 P(Y|X) 不變。
-- Label shift：P(Y) 改變且 P(X|Y) 不變。
-- Concept shift：P(Y|X) 改變。
-- Selection bias：樣本取得方式造成樣本與目標母體不同。
+Selection bias arises from nonrepresentative sampling, e.g. observing labels only for approved loan applicants. Observing feature drift does not identify which mechanism caused it.
 
-無 ground truth 時可監控 missingness、schema、feature/prediction distribution、out-of-range、prediction confidence、人工抽樣；無法直接知道真實 AUC、precision 或 recall。KS test 比較一維 empirical CDF 最大差；p-value 受樣本量影響。PSI = Σ(actual-expected) ln(actual/expected)，先固定 bins、處理零比例；0.1/0.25 只是常見經驗界線，不是普遍標準。Drift 不必然表示 performance degradation，需補 labels 或實驗驗證。
+## 2. What can be monitored without labels?
 
-## Practical algorithm selection (P0)
+Schema, missingness, feature distributions, score distributions, cohort composition and extreme values can be monitored. KS test compares empirical CDFs; p-value depends on sample size. PSI compares proportions in fixed bins:
 
-| Situation | First candidates | Main tradeoff |
+**PSI = Σᵢ (actualᵢ − expectedᵢ) × ln(actualᵢ / expectedᵢ)**
+
+Handle zero proportions explicitly; thresholds are heuristics, not universal standards. Without ground truth cannot directly calculate actual recall, precision, accuracy, MAE or AUC. When delayed labels arrive, evaluate cohorts over time, assess calibration and check business outcomes. Retraining is an option only after investigating the cause and validating on representative data.
+
+## 3. Interpretation
+
+| Method | Meaning | Limitation |
+|---|---|---|
+| Linear coefficient | conditional association per unit | correlated features, scaling, noncausal |
+| Impurity importance | total tree split improvement | may favor high-cardinality features |
+| Permutation importance | validation performance drop when shuffling | correlated predictors may mask importance |
+| Partial dependence | average model prediction as feature varies | unrealistic combinations with correlated features |
+| SHAP (P1) | contribution to a prediction relative to baseline | depends on background/assumptions; not causal |
+
+Example validation AUC=.82, after shuffling feature A=.75. Permutation importance=.07 for that shuffle. If B carries similar information, shuffling A alone may make little difference. Repeat shuffles and evaluate on suitable held-out data.
+
+```python
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.inspection import permutation_importance
+X,y=make_classification(n_samples=300,n_features=8,random_state=42)
+Xtr,Xv,ytr,yv=train_test_split(X,y,test_size=.25,stratify=y,random_state=42)
+m=RandomForestClassifier(n_estimators=100,random_state=42).fit(Xtr,ytr)
+r=permutation_importance(m,Xv,yv,scoring='roc_auc',n_repeats=5,random_state=42)
+print(r.importances_mean)
+```
+
+## 4. Compare algorithms by problem constraints
+
+| Scenario | Reasonable candidates | Tradeoff |
 |---|---|---|
 | Interpretable continuous target | OLS, Ridge, Lasso | linear structure vs nonlinear bias |
-| Sparse text classification | LogisticRegression, MultinomialNB | scalable sparse representations |
-| Mixed tabular nonlinear data | RandomForest, GradientBoosting | stronger interactions vs complexity |
-| Small scaled nonlinear dataset | SVM, KNN | kernel/distance sensitivity |
-| Customer segmentation | KMeans, hierarchical, DBSCAN | shape, density, scaling |
-| Reduce correlated features | PCA | variance preservation vs interpretability |
+| Sparse text | LogisticRegression, MultinomialNB, linear SVM | efficient sparse baselines |
+| Mixed tabular nonlinear | RandomForest, boosting | interactions, complexity |
+| Small scaled nonlinear dataset | KNN, kernel SVM | distance/margin, inference cost |
+| Customer segmentation | K-means, hierarchical, DBSCAN | geometry, density and scale |
+| Large unstructured data | neural networks | learned representation, data/compute requirements |
 
-## Interpreting changes in deployment
+Select via appropriate validation and metric, not model reputation. Review [Classification Metrics](../modeling/02-classification-metrics.md), [Regression & MAE](../modeling/03-regression.md) and [Calibration](../modeling/05-clustering-calibration.md).
 
-| Scenario | Likely shift to investigate |
-|---|---|
-| Customer income distribution changes, stable buying relation | Covariate shift |
-| Fraud prevalence changes, stable feature distributions conditional on fraud status | Label shift |
-| Same observed transaction features now imply higher fraud risk | Concept drift |
+## Concept variations
 
-These categories need assumptions; observing P(X) changes alone does not identify the shift mechanism. Once labels arrive, evaluate performance by cohort and time.
+<details><summary>1. Fraud prevalence rises but TPR and FPR remain fixed. Does precision stay constant?</summary>
 
-Feature importance: tree impurity reduction may favor high-cardinality features; permutation importance measures performance drop when shuffling, can understate correlated features; SHAP attributes a model prediction relative to a baseline, not causal proof.
-
-<details><summary>Variation: In a new market fraud prevalence doubles, but TPR and FPR stay fixed. Which metric must be reconsidered?</summary>
-
-Precision changes because its denominator depends on prevalence; ROC point may stay fixed. Calibration and business threshold may need reevaluation.
+No. Precision = prevalence × TPR / [prevalence × TPR + (1−prevalence) × FPR]. Base rate changes precision; the ROC operating point can remain unchanged.
 
 </details>
 
-<details><summary>Variation: A feature has high SHAP values. Can removing that business factor be claimed to improve outcomes?</summary>
+<details><summary>2. A KS test indicates feature drift. Can you conclude model accuracy decreased?</summary>
 
-No. Model attribution is not intervention effect. Need causal design or experiment.
+No. Without labels you can detect distribution changes but not establish performance degradation. Investigate cohort and instrumentation changes and obtain labels.
 
 </details>
 
-[← Chapter index](../04-ml.md)
+<details><summary>3. Feature A has a high SHAP contribution. Does changing A necessarily improve business outcome?</summary>
+
+No. Attribution describes model prediction, not causal intervention effect.
+
+</details>
