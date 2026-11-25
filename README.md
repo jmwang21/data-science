@@ -13,7 +13,7 @@
 | 🔵 [01 pandas](01-pandas.md) | 8 | Filtering, GroupBy, Merge, Cleaning, Features, Reshaping/Window, DateTime, Integration |
 | 🟢 [02 Preprocessing](02-preprocessing.md) | 4 | Missing/outliers, scaling/encoding, feature selection/imbalance, Pipeline |
 | 🟣 [03 Model Development & Evaluation](03-models.md) | 5 | Validation, classification metrics, regression, tuning, clustering/calibration |
-| 🟠 [04 ML Fundamentals](04-ml.md) | 6 | Linear models, trees/ensembles, KNN/SVM/NB, unsupervised, generalization, drift |
+| 🟠 [04 ML Fundamentals](04-ml.md) | 15 | Learning paradigms, linear/logistic regression, optimization, trees/ensembles, KNN/SVM/NB, clustering/PCA, neural nets, generalization and drift |
 | 🔴 [05 Probability & Statistics](05-statistics.md) | 6 | Probability, Bayes, distributions, expectation, inference, testing/A/B |
 | 🔵 [06 Integrated Worked Cases](06-cases.md) | 3 | Merchant analysis, churn classifier, house price regression |
 | ⚪ [07 Cheat Sheet](07-review.md) | reference | Quick syntax, metrics and formulas |
