@@ -67,9 +67,11 @@ Control A: 800 conversions / 8000；Treatment B: 920 / 8000。
 
 Two-sided two-proportion z-test：H0 pA=pB；H1 pA≠pB。
 
-$$\hat p=\frac{x_A+x_B}{n_A+n_B},\quad SE_0=\sqrt{\hat p(1-\hat p)(1/n_A+1/n_B)}$$
+**Pooled proportion:** p̂ = (x_A + x_B) / (n_A + n_B)
 
-$$z=\frac{\hat p_B-\hat p_A}{SE_0}$$
+**Null standard error:** SE₀ = √[p̂(1−p̂)(1/n_A + 1/n_B)]
+
+**z = (p̂_B − p̂_A) / SE₀**
 
 ```python
 from scipy.stats import norm
@@ -109,7 +111,7 @@ MDE 是設計想偵測的最小效果，不是觀察到的效果。固定其他�
 
 兩組等樣本、近似常態且共同 variance σ² 的雙尾檢定：
 
-$$n_{per\ group}\approx\frac{2\sigma^2(z_{1-\alpha/2}+z_{1-\beta})^2}{\delta^2}$$
+**n per group ≈ 2σ² × [z(1−α/2) + z(1−β)]² / δ²**
 
 二元轉換率規劃可用 baseline p 的 variance p(1-p) 做簡化近似。Baseline=.10，MDE=.01 absolute，alpha=.05，power=.8，約 14,128/group（使用 1.96/.8416 的常態分位數；精確規劃可能不同）。要考慮失訪、cluster effect、分流比例。
 
