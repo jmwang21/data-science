@@ -12,11 +12,11 @@ IID、有限 variance 下，sample mean 的期望 μ，variance σ²/n，standar
 
 ## Confidence interval 
 
-已知 σ 的常態或大樣本近似：$\bar x\pm z_{1-\alpha/2}\sigma/\sqrt n$。未知 σ、常態 IID 資料時，用 t 分位數與 sample SD：$\bar x\pm t_{n-1,1-\alpha/2}s/\sqrt n$。
+已知 σ 的常態或大樣本近似：`x̄ ± z(1−α/2) × σ/√n`。未知 σ、常態 IID 資料時，用 t 分位數與 sample SD：`x̄ ± t(df=n−1, quantile=1−α/2) × s/√n`。
 
 例：mean=100, SE=2，95% z CI=[96.08,103.92]。Frequentist 95% CI 意思是重複抽樣並用同一方法建 CI，長期約 95% 區間覆蓋真參數；不是已得到的固定區間有 95% 機率包含固定真值。
 
-比例的大樣本近似：$\hat p\pm z\sqrt{\hat p(1-\hat p)/n}$；小樣本/接近 0 或 1 時可使用 Wilson interval。
+比例的大樣本近似：`p̂ ± z × √[p̂(1−p̂)/n]`；小樣本/接近 0 或 1 時可使用 Wilson interval。
 
 ## Worked variation — individual versus sample mean
 
