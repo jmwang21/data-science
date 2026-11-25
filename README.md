@@ -28,6 +28,10 @@
 
 已熟悉基礎者可直接從 01–05 逐章閱讀；機率統計可按順序從第一節開始。08 是 Python/NumPy 及多檔資料處理的補充；06 提供完整可閱讀案例。
 
+## End-to-end coding practice
+
+[Two English coding practice sets](practice/README.md) — seven CSVs each, data manipulation, binary modeling and evaluation; starter code and separate reference solutions.
+
 ## Assessment-focused ML review
 
 [ML Assessment Reasoning](ml/assessment-reasoning.md) 整合 generalization、ensemble、AUC、log loss、binary classification 與 code interpretation。原創英文多選題逐項解析；不是正式題庫或對考題頻率的保證。
