@@ -6,9 +6,11 @@
 
 ## Expected value & variance 
 
-$$E[X]=\sum_x xP(X=x)\qquad Var(X)=E[X^2]-E[X]^2$$
+**E[X] = Σₓ x × P(X=x)**
 
-$E[aX+b]=aE[X]+b$；$Var(aX+b)=a^2Var(X)$。Expectation 可線性相加，不需要獨立；$Var(X+Y)=Var(X)+Var(Y)+2Cov(X,Y)$。獨立 ⇒ covariance=0，反向通常不成立。
+**Var(X) = E[X²] − E[X]²**
+
+`E[aX+b] = aE[X]+b`；`Var(aX+b) = a²Var(X)`。Expectation 可線性相加，不需要獨立；`Var(X+Y) = Var(X)+Var(Y)+2Cov(X,Y)`。獨立 ⇒ covariance=0，反向通常不成立。
 
 Example: 20% earn $100, 80% earn $0. E=20，E[X²]=2000，Var=1600，SD=40。若兩個獨立 campaign，總期望 40，variance 3200。
 
@@ -23,7 +25,7 @@ Population variance 分母 n；unbiased sample variance 分母 n−1（IID 假�
 
 ## Bernoulli, indicator variables & tricky expectation 
 
-Let $I_A=1$ when event A occurs, otherwise 0. Then $E[I_A]=P(A)$ and $Var(I_A)=p(1-p)$. Linearity $E[\sum_i I_i]=\sum_i E[I_i]$ does **not** require independence. Variance additivity generally requires zero covariance.
+Let Iₐ=1 when event A occurs, otherwise 0. Then `E[Iₐ] = P(A)` and `Var(Iₐ) = p(1−p)`. Linearity `E[Σᵢ Iᵢ] = Σᵢ E[Iᵢ]` does **not** require independence. Variance additivity generally requires zero covariance.
 
 ### Example 1 — dependent Bernoulli trials
 
