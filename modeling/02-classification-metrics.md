@@ -52,7 +52,7 @@ ap = average_precision_score(y_valid, valid_prob)
 
 Log Loss 評估機率預測的品質，越低越好；對自信但錯誤的預測懲罰特別大。
 
-$$L=-\frac{1}{n}\sum_{i=1}^n[y_i\ln(p_i)+(1-y_i)\ln(1-p_i)]$$
+**Log Loss = −(1/n) × Σᵢ [yᵢ ln(pᵢ) + (1−yᵢ) ln(1−pᵢ)]**
 
 | True label | Predicted positive probability | Loss |
 |---|---:|---:|
