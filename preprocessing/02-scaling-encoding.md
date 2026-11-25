@@ -6,7 +6,7 @@
 
 ## Scaling & encoding 
 
-StandardScaler: $z=(x-\mu)/\sigma$；MinMaxScaler: $(x-min)/(max-min)$。LR、SVM、KNN、K-means 常受尺度影響；tree-based 模型通常不需要 scaling。OneHotEncoder 適用 nominal category；OrdinalEncoder 適用有序類別或明確編碼需求，不應任意假設順序。OneHotEncoder 未知類別可用 handle_unknown='ignore'；OrdinalEncoder 可用 handle_unknown='use_encoded_value', unknown_value=-1。
+StandardScaler: `z = (x−μ)/σ`；MinMaxScaler: `(x−min)/(max−min)`。LR、SVM、KNN、K-means 常受尺度影響；tree-based 模型通常不需要 scaling。OneHotEncoder 適用 nominal category；OrdinalEncoder 適用有序類別或明確編碼需求，不應任意假設順序。OneHotEncoder 未知類別可用 handle_unknown='ignore'；OrdinalEncoder 可用 handle_unknown='use_encoded_value', unknown_value=-1。
 
 ## Worked examples — scaling, encoding and missingness 
 
