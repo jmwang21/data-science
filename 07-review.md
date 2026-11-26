@@ -103,6 +103,15 @@ These are links for further reading, not claims that the live documentation was 
 
 ## 6. Model & statistics quick reference（P0）
 
+### Model parameter — 必記方向
+
+1. **Alpha ↑ → Regularization ↑** (Ridge / Lasso)
+2. **C ↑ → Regularization ↓** (Logistic Regression / SVM)
+3. **Gamma ↑ → RBF 影響範圍 ↓，模型傾向更複雜** (RBF SVM)
+
+English: C is the inverse regularization strength; higher gamma means a narrower influence of each observation. These directions do not guarantee better validation performance.
+
+
 | Topic | Key relationship / choice |
 |---|---|
 | Regression baseline | MAE → median; MSE → mean |
